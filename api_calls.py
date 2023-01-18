@@ -29,7 +29,7 @@ class APICalls:
         response = requests.post('https://api.cloudflare.com/client/v4/zones', 
             headers=my_headers, params=parameters)
 
-        response = json.dumps(response.text)
+        response = json.loads(response.text)
 
         if self.settings.quiet == False:
             print(f"[*] API call to add domain {domain_name}, success: {response['success']}status code: {response.status_code}, errors: {response['errors']}")
@@ -67,14 +67,14 @@ class APICalls:
             'proxied': False,
         }
 
-        parameters = json.loads(parameters)
+        parameters = json.dumps(parameters)
 
         #priority and proxied are optional
 
         response = requests.post(f'https://api.cloudflare.com/client/v4/zones/{zone_identifier}/dns_records', 
             headers=my_headers, params=parameters)
 
-        response = json.dumps(response)
+        response = json.loads(response.text)
 
         if self.settings.quiet == False:
             print(f"[*] API call to add DNS rule for {domain_name}, success: {response['success']}status code: {response.status_code}, errors: {response['errors']}")
@@ -123,12 +123,12 @@ class APICalls:
             'status': 'active',
         }
 
-        parameters = json.loads(parameters)
+        parameters = json.dumps(parameters)
 
         response = requests.post(f'https://api.cloudflare.com/client/v4/zones/{zone_identifier}/pagerules', 
             headers=my_headers, params=parameters)
 
-        response = json.dumps(response)
+        response = json.loads(response.text)
 
         if self.settings.quiet == False:
             print(f"[*] API call to add page rule, success: {response['success']}status code: {response.status_code}, errors: {response['errors']}")

@@ -6,6 +6,7 @@ import requests
 import sys
 
 from api_calls import APICalls
+import config
 import program_strings
 from settings import Settings
 
@@ -60,14 +61,6 @@ class Main:
 
     def _user_input(self):
 
-        if self.args.token:
-            self.access_token = self.args.token
-        else:
-            self.access_token = input("\nPlease enter your API token:\n")
-            #if len(self.access_token) != 40:
-             #   print("Sorry, your API token was not the right length, please try again...\nexiting...")
-              #  sys.exit()
-
         if self.args.id:
             self.account_id = self.args.id
         else:
@@ -83,6 +76,12 @@ class Main:
 
 
     def _create_my_headers(self):
+        
+        try:
+            self.access_token = config.API_token
+        except ModuleNotFoundError:
+            print("Please create a config.py file in this directory conatiaining an API Token. Please see the help menu or the README for more information")
+
         self.my_headers= {
             'Content-Type' : 'application/json',
             'Authorization' : f'Bearer {self.access_token}'
@@ -99,7 +98,6 @@ class Main:
         parser.add_argument('-l', '--log', action='store_true', help="Enable logging")
         parser.add_argument('-nl', '--nologs', action='store_true', help="Disable logging")
         parser.add_argument('-q', '--quiet', action='store_true', help="Decrese program output to only show important errors and messages.")
-        parser.add_argument('--token', help="Add your API token at the command line instead of as input once the program starts.")
         parser.add_argument('--troubleshoot', action='store_true', help="This will turn on troubleshooting logging, which will log complete API responses")
         parser.add_argument('-v', '--verbose', action='store_true', 
             help="Increase program output to print more information to the console if quiet is set to True in settings.py.")

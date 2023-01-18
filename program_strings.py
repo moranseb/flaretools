@@ -23,7 +23,7 @@ help_string = """
 The program takes a CSV file, parses it, and adds the domain names, DNS rules
 and page rules to Cloudflare using the Cloudflare API. You must provide:\n
 
-1) A valid Cloudflare API token in the config.py file\n
+1) A valid Cloudflare API token in a config.py file in the same directory as the cloudflare_api_automation.py script\n
 2) A valid organization ID\n
 3) A path to a CSV file\n
 
