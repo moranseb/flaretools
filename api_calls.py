@@ -22,7 +22,6 @@ class APICalls:
             'jump_start': True,
             'type': 'full',
         }
-        parameters = json.dumps(parameters)
 
         # Jumpstart and type are optional, ask Jon
 
@@ -66,8 +65,6 @@ class APICalls:
             'priority': 10,
             'proxied': False,
         }
-
-        parameters = json.dumps(parameters)
 
         #priority and proxied are optional
 
@@ -122,8 +119,6 @@ class APICalls:
             'priority': 1,
             'status': 'active',
         }
-
-        parameters = json.dumps(parameters)
 
         response = requests.post(f'https://api.cloudflare.com/client/v4/zones/{zone_identifier}/pagerules', 
             headers=my_headers, params=parameters)

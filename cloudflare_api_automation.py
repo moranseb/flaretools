@@ -61,14 +61,6 @@ class Main:
 
     def _user_input(self):
 
-        if self.args.id:
-            self.account_id = self.args.id
-        else:
-            self.account_id = input("\nPlease enter your organization's Cloudflare account ID:\n")
-            #if len(self.organization_id) != 32:
-             #   print("Sorry, your organization's Cloudflare account ID was the wrong length, please try again...\nexiting...")
-              #  sys.exit()
-
         if self.args.csv:
             self.csv = self.args.csv
         else:
@@ -83,7 +75,7 @@ class Main:
             print("Please create a config.py file in this directory conatiaining an API Token. Please see the help menu or the README for more information")
 
         self.my_headers= {
-            'Content-Type' : 'application/json',
+            'Content-Type' : 'application/json', 
             'Authorization' : f'Bearer {self.access_token}'
             }
 
