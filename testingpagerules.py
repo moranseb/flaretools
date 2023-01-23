@@ -1,10 +1,12 @@
 import requests
 import json
+import config
 
 account_id = config.account_id
 access_token = config.access_token
+zone_identifier = ""
 
-myheaders = {
+my_headers = {
     'Content-Type' : 'application/json', 
     'Authorization' : f'Bearer {access_token}'
 }

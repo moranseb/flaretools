@@ -1,11 +1,14 @@
 import requests
 import json
+import config
 
 domain_name = ""
-account_id = ""
-access_token = ""
+account_id = config.account_id
+access_token = config.access_token
+content = ""
+zone_identifier = ""
 
-myheaders = {
+my_headers = {
     'Content-Type' : 'application/json', 
     'Authorization' : f'Bearer {access_token}'
 }
@@ -18,7 +21,6 @@ parameters = {
     'priority': 10,
     'proxied': False,
 }
-
 
 #priority and proxied are optional
 
