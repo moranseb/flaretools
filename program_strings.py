@@ -29,7 +29,7 @@ and page rules to Cloudflare using the Cloudflare API. You must provide:\n
 
 """
 
-        #CSV parsing and API calls
+# CSV parsing and API calls
 """
         with open(self.csv, 'r') as file:
             DictReaderFile = csv.DictReader(file)

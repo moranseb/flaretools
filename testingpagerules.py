@@ -1,3 +1,5 @@
+# After completing with Jon, remeber to add edits to the main program.
+
 import requests
 import json
 import config
@@ -5,34 +7,41 @@ import config
 account_id = config.account_id
 access_token = config.access_token
 zone_identifier = ""
+domain = ""
+real_site = "" # Pull from csv header <Website>
 
 my_headers = {
-    'Content-Type' : 'application/json', 
-    'Authorization' : f'Bearer {access_token}'
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {access_token}",
 }
 
 parameters = {
-    'targets': [
+    "targets": [
         {
-            'target': 'url',
-            'constraint': {
-                'operator': 'matches',
-                'value': '*example.com/images/*',
+            "target": "url",
+            "constraint": {
+                "operator": "matches",
+                "value": f"*{domain}",
             },
         },
     ],
-    'actions': [
+    "actions": [
         {
-            'id': 'browser_check',
-            'value': 'on',
+            "id": "forwarding_url",
+            "value": {
+                "url": f"http://{real_site}",
+                "status_code": 301
+            },
         },
     ],
-    'priority': 1,
-    'status': 'active',
+    "status": "active",
 }
 
-response = requests.post(f'https://api.cloudflare.com/client/v4/zones/{zone_identifier}/pagerules', 
-    headers=my_headers, params=parameters)
+response = requests.post(
+    f"https://api.cloudflare.com/client/v4/zones/{zone_identifier}/pagerules",
+    headers=my_headers,
+    json=parameters,
+)
 
 print(response.text)
 print(response.status_code)
@@ -40,4 +49,6 @@ print(response.status_code)
 response = json.loads(response.text)
 
 print(response)
-zone_identifier = response["result"]["id"]
+
+with open('logs.txt', 'a') as f:
+    f.write(f"page rules response: \n {response} \n\n\n")

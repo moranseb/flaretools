@@ -22,14 +22,14 @@ class Main:
         if self.settings.troubleshoot_log == True:
             _troubleshoot_log_warning()
         self.issue_log = []
-        
+
     def run_program(self):
         """Currently for testing only"""
 
         self._user_input()
         self._create_my_headers()
 
-        #CSV parsing and API calls
+        # CSV parsing and API calls
         """with open(self.csv, 'r') as file:
             DictReaderFile = csv.DictReader(file)
             for row in DictReaderFile:
@@ -42,7 +42,7 @@ class Main:
         print("During exicution the following issues were flagged. Please review:")
         print(self.issue_log)
 
-        #Print to test your code!!
+        # Print to test your code!!
 
         if self.settings.quiet == True:
             print("The program is set to quiet")
@@ -58,84 +58,116 @@ class Main:
         print(self.account_id)
         print(self.access_token)
 
-
     def _user_input(self):
 
         if self.args.csv:
             self.csv = self.args.csv
         else:
-            self.csv = input("\nPlease enter the absolute or relative path to the excel file:\n")
-
+            self.csv = input(
+                "\nPlease enter the absolute or relative path to the excel file:\n"
+            )
 
     def _create_my_headers(self):
-        
+
         try:
             self.access_token = config.API_token
         except ModuleNotFoundError:
-            print("Please create a config.py file in this directory conatiaining an API Token. Please see the help menu or the README for more information")
+            print(
+                "Please create a config.py file in this directory conatiaining an API Token. Please see the help menu or the README for more information"
+            )
 
-        self.my_headers= {
-            'Content-Type' : 'application/json', 
-            'Authorization' : f'Bearer {self.access_token}'
-            }
+        self.my_headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.access_token}",
+        }
 
     def _arg_parser(self):
         """Function to parse the command line arguments."""
 
         parser = argparse.ArgumentParser(description=program_strings.help_string)
 
-        parser.add_argument('--csv', help="Specify the path to a csv file instead of providing it after program startup.")
-        parser.add_argument('--file', type=str, help="Specify a file to store the program logs if not using the default file from settings.py.")
-        parser.add_argument('--id', help="Add your organization's Cloudflare account ID from the command line instead of as input once the program starts")
-        parser.add_argument('-l', '--log', action='store_true', help="Enable logging")
-        parser.add_argument('-nl', '--nologs', action='store_true', help="Disable logging")
-        parser.add_argument('-q', '--quiet', action='store_true', help="Decrese program output to only show important errors and messages.")
-        parser.add_argument('--troubleshoot', action='store_true', help="This will turn on troubleshooting logging, which will log complete API responses")
-        parser.add_argument('-v', '--verbose', action='store_true', 
-            help="Increase program output to print more information to the console if quiet is set to True in settings.py.")
+        parser.add_argument(
+            "--csv",
+            help="Specify the path to a csv file instead of providing it after program startup.",
+        )
+        parser.add_argument(
+            "--file",
+            type=str,
+            help="Specify a file to store the program logs if not using the default file from settings.py.",
+        )
+        parser.add_argument(
+            "--id",
+            help="Add your organization's Cloudflare account ID from the command line instead of as input once the program starts",
+        )
+        parser.add_argument("-l", "--log", action="store_true", help="Enable logging")
+        parser.add_argument(
+            "-nl", "--nologs", action="store_true", help="Disable logging"
+        )
+        parser.add_argument(
+            "-q",
+            "--quiet",
+            action="store_true",
+            help="Decrese program output to only show important errors and messages.",
+        )
+        parser.add_argument(
+            "--troubleshoot",
+            action="store_true",
+            help="This will turn on troubleshooting logging, which will log complete API responses",
+        )
+        parser.add_argument(
+            "-v",
+            "--verbose",
+            action="store_true",
+            help="Increase program output to print more information to the console if quiet is set to True in settings.py.",
+        )
 
         self.args = parser.parse_args()
 
     def _troubleshoot_log_warning(self):
-        answer = input("""WARNING: troubleshoot_log is enabled, this will create a log with full API responses that should be deleted after use.\n
-            Do you wish to continue? (y/n)""")
+        answer = input(
+            """WARNING: troubleshoot_log is enabled, this will create a log with full API responses that should be deleted after use.\n
+            Do you wish to continue? (y/n)"""
+        )
         if answer == "y":
-            pass 
+            pass
         if answer == "n":
-            print("Check you settings.py file to make sure the troubleshoot_log is disabled by default,\n and make sure not to enable it at the command line")
+            print(
+                "Check you settings.py file to make sure the troubleshoot_log is disabled by default,\n and make sure not to enable it at the command line"
+            )
             sys.exit()
         else:
             print("Invalid input, exiting...")
             sys.exit()
 
-
-#API functions here
+    # API functions here
 
     def _make_api_calls(row):
 
-        #Add the domain
-        domain_name = row['Domain']
-        add_domain_response = self.api_calls._add_domain(self.my_headers, domain_name, 
-            self.account_id)
+        # Add the domain
+        domain_name = row["Domain"]
+        add_domain_response = self.api_calls._add_domain(
+            self.my_headers, domain_name, self.account_id
+        )
         zone_identifier = add_domain_response["result"]["id"]
 
-        #Add DNS rules, this part there are too many fields that I don't understand, ask Jon, especially type and content
+        # Add DNS rules, this part there are too many fields that I don't understand, ask Jon, especially type and content
 
-        first_content = row['DNSRule1Content']
-        first_dns_response = self.api_calls._create_dns_record(self.my_headers, 
-            domain_name, first_content, zone_identifier)
-        second_content = row['DNSRule2Content']
-        second_dns_response = self.api_calls._create_dns_record(self.my_headers, 
-            domain_name, second_content, zone_identifier)
+        first_content = row["DNSRule1Content"]
+        first_dns_response = self.api_calls._create_dns_record(
+            self.my_headers, domain_name, first_content, zone_identifier
+        )
+        second_content = row["DNSRule2Content"]
+        second_dns_response = self.api_calls._create_dns_record(
+            self.my_headers, domain_name, second_content, zone_identifier
+        )
 
-        #Add page rules handling with Jon
+        # Add page rules handling with Jon
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Make an instance, and run the program.
     flare = Main()
     flare.run_program()
-
 
 
 """
