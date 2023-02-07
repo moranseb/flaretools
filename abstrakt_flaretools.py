@@ -108,7 +108,7 @@ def create_zone(headers, domain_name, account_id):
         "https://api.cloudflare.com/client/v4/zones", headers=headers, json=parameters
     )
 
-    for item in (400, 401, 403):
+    for item in (401, 403):
         if response.status_code == item:
             print(f"\n\n[WARNING] You recieved a {response.status_code} error, please check your Cloudflare API token.")
             print("Note: This may mean your Cloudflare token may have expired. Please verify. To replace token, edit config.py or delete config.py and re-run this program to replace.")
