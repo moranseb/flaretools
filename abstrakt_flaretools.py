@@ -1,52 +1,78 @@
+#!python3
 import csv
 import json
 import requests
 import sys
+import tkinter
+from tkinter import filedialog
+import os
 
 import program_strings
 import config
 
-
 def main():
 
     print(program_strings.logo)
-    print("\n\n\nWell then, here we go... Exciting...")
 
     global APIfalures
     APIfalures = 50  # Change how many API falures before the program exits.
 
     global issue_log
     issue_log = []
-    csv_file = sys.argv[1]
 
     headers = _create_my_headers()
 
-    # CSV parsing and API calls
+    try:
+        csv_file = sys.argv[1]
+    except IndexError:
+        csv_file = get_file()
+
+    #CSV parsing and API calls
     with open(csv_file, 'r') as file:
         DictReaderFile = csv.DictReader(file)
         for row in DictReaderFile:
             if APIfalures > 0:
                 _make_api_calls(row, headers)
             else:
-                print("Yikes, there have been a lot of unsuccessful API calls, please review your logs before continuing")
+                print("Yikes, there have been a lot of unsuccessful API calls, please review before continuing")
+                x = input("Press ENTER to exit:\n")
                 sys.exit(1)
 
     print("During exicution the following issues were flagged. Please review:")
     print(issue_log)
 
+def create_config():
+    print("Your config.py file is not setup, please complete the following steps, then re-run the program.\n")
+    with open("config.py", "w") as f:
+        token = input("Please enter your Cloudflare API token:\n").strip()
+        org_id = input("Plase enter your organization's Cloudflare ID:\n").strip()
+        IPv4 = input("Please enter the IP address needed in your DNS rules:\n").strip()
+        f.write(f'access_token = "{token}"\naccount_id = "{org_id}"\nIPv4 = "{IPv4}"')
+        x = input("Press ENTER to exit:\n")
+        sys.exit()
+
 def _create_my_headers():
     try:
-        access_token = config.access_token
-    except ModuleNotFoundError:
-        print(
-            "Please create a config.py file in this directory conatiaining an API Token. Please see the help menu or the documentation for more information"
-        )
+        if not config.access_token:
+            create_config()
+    except (ModuleNotFoundError, AttributeError):
+        create_config()
 
+    access_token = config.access_token
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}",
     }
     return headers
+
+def get_file():
+    root = tkinter.Tk()
+    root.withdraw() #use to hide tkinter window
+
+    currdir = os.getcwd()
+    filename = filedialog.askopenfilename(parent=root, initialdir=currdir, title='Please select a CSV file')
+
+    return filename
 
 def _make_api_calls(row, headers):
 
@@ -82,15 +108,23 @@ def create_zone(headers, domain_name, account_id):
         "https://api.cloudflare.com/client/v4/zones", headers=headers, json=parameters
     )
 
+    for item in (400, 401, 403):
+        if response.status_code == item:
+            print(f"\n\n[WARNING] You recieved a {response.status_code} error, please check your Cloudflare API token.")
+            print("Note: This may mean your Cloudflare token may have expired. Please verify. To replace token, edit config.py or delete config.py and re-run this program to replace.")
+            print(f"[WARNING] API call to add domain {domain_name} failed.\n")
+            x = input("Press ENTER to exit:\n")
+            sys.exit()
     response = json.loads(response.text)
 
     if response["success"] == True:
         print(
-            f"[*] API call to add domain {domain_name}, success: {response['success']}, errors: {response['errors']}"
+            f"[*] API call to add domain {domain_name} succeeded, errors: {response['errors']}"
         )
 
     if response["success"] == False:
         print(f"\n[WARNING] API call to add domain {domain_name} failed.\n")
+        print(response)
         global APIfalures
         APIfalures -= 1
         issue_log.append(f"API call to add {domain_name} failed.")
@@ -149,7 +183,7 @@ def add_dns_rules(headers, zone_identifier, domain_name, IPv4, account_id, O365_
 
         if response["success"] == True:
             print(
-                f"[*] API call to add DNS rule {str(i+1)} for {domain_name}, success: {response['success']}, errors: {response['errors']}"
+                f"[*] API call to add DNS rule {str(i+1)} for {domain_name} succeeded, errors: {response['errors']}"
             )
 
         if response["success"] == False:
@@ -192,7 +226,7 @@ def add_page_rules(headers, domain_name, website, zone_identifier):
 
     if response["success"] == True:
         print(
-            f"[*] API call to add a page rule for {domain_name}, success: {response['success']}, errors: {response['errors']}"
+            f"[*] API call to add a page rule for {domain_name} succeeded, errors: {response['errors']}"
         )
 
     if response["success"] == False:
@@ -202,4 +236,5 @@ def add_page_rules(headers, domain_name, website, zone_identifier):
         issue_log.append(f"API call to add a page rule for {domain_name} failed.")
 
 main()
-print("\n\n\n *** So long, and thanks for all the fish *** \n\n")
+x = input("Press ENTER to exit:\n")
+#So long, and thanks for all the fish
