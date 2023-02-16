@@ -133,6 +133,8 @@ def create_zone(headers, domain_name, account_id):
 
 def add_dns_rules(headers, zone_identifier, domain_name, IPv4, account_id, O365_sender):
 
+    cname_domain = domain_name.split(".")[0]
+
     for i in range(5):
 
         url = f"https://api.cloudflare.com/client/v4/zones/{zone_identifier}/dns_records"
@@ -143,8 +145,8 @@ def add_dns_rules(headers, zone_identifier, domain_name, IPv4, account_id, O365_
         name_list= ("@", "www", "selector1._domainkey", "selector2._domainkey", "_dmarc")
         name = name_list[i]
 
-        content_list = [f"{IPv4}", "@", f"selector1-{domain_name}-com._domainkey.kablooeco.onmicrosoft.com", 
-            f"selector2-{domain_name}-com._domainkey.kablooeco.onmicrosoft.com", f"v=DMARC1; p=none; pct=100; rua={O365_sender}; ruf=mailto:{O365_sender}; fo=1"]
+        content_list = [f"{IPv4}", "@", f"selector1-{cname_domain}-com._domainkey.kablooeco.onmicrosoft.com", 
+            f"selector2-{cname_domain}-com._domainkey.kablooeco.onmicrosoft.com", f"v=DMARC1; p=none; pct=100; rua={O365_sender}; ruf=mailto:{O365_sender}; fo=1"]
         content = content_list[i]
 
         ttl_tuple = (1, 1, 120, 120, 120)
